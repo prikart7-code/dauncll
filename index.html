@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOLDER</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0F0F0F;
+            color: #FFFFFF;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .page {
+            display: none;
+            padding: 0 16px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #2C2C2C;
+        }
+
+        .close-btn {
+            color: #8E8E93;
+            font-size: 24px;
+            background: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .app-title {
+            text-align: center;
+        }
+
+        .app-name {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 22px;
+        }
+
+        .app-subtitle {
+            font-size: 13px;
+            color: #8E8E93;
+            line-height: 18px;
+        }
+
+        /* Balance */
+        .balance-section {
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 15px;
+            color: #8E8E93;
+            margin-bottom: 4px;
+        }
+
+        .balance-amount {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Partnership */
+        .partnership {
+            background: linear-gradient(90deg, #4CD964 0%, #5AC8FA 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .partnership-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .partnership-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .go-btn {
+            background: rgba(255,255,255,0.2);
+            border: 0.5px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Games Section */
+        .section-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 24px 0 16px 0;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .game-card {
+            background: #1C1C1E;
+            border-radius: 12px;
+            padding: 16px;
+            border: 0.5px solid #2C2C2C;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .game-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .game-multiplier {
+            background: rgba(120, 120, 128, 0.2);
+            color: #FFFFFF;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .game-desc {
+            font-size: 13px;
+            color: #8E8E93;
+            margin-bottom: 12px;
+            line-height: 16px;
+        }
+
+        .game-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .game-tag {
+            background: rgba(120, 120, 128, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #8E8E93;
+        }
+
+        /* Wheel Page */
+        .wheel-section {
+            padding: 20px 0;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: conic-gradient(
+                from 0deg,
+                #FF3B30 0deg 90deg,
+                #FF9500 90deg 180deg,
+                #FFCC00 180deg 270deg,
+                #4CD964 270deg 360deg
+            );
+            border: 8px solid #1C1C1E;
+        }
+
+        .wheel.spinning {
+            animation: spin 3s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(1080deg); }
+        }
+
+        .wheel-sections {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .wheel-item {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+        }
+
+        .wheel-item:nth-child(1) { transform: rotate(0deg); }
+        .wheel-item:nth-child(2) { transform: rotate(90deg); }
+        .wheel-item:nth-child(3) { transform: rotate(180deg); }
+        .wheel-item:nth-child(4) { transform: rotate(270deg); }
+
+        .multiplier {
+            transform: rotate(45deg);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #FF3B30;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+        }
+
+        /* Bet Controls */
+        .bet-controls {
+            background: #1C1C1E;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            border: 0.5px solid #2C2C2C;
+        }
+
+        .bet-title {
+            font-size: 15px;
+            color: #8E8E93;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .current-bet {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: #2C2C2C;
+            border-radius: 8px;
+        }
+
+        .bet-amount {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .bet-info {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .bet-multiplier {
+            background: rgba(120, 120, 128, 0.2);
+            color: #FFFFFF;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .quick-bets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .quick-bet {
+            background: rgba(120, 120, 128, 0.2);
+            border: 0.5px solid rgba(120, 120, 128, 0.2);
+            color: white;
+            padding: 10px 8px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .multiplier-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .multiplier-item {
+            background: rgba(120, 120, 128, 0.2);
+            border: 0.5px solid rgba(120, 120, 128, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .multiplier-value {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .multiplier-bet {
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .multiplier-count {
+            font-size: 13px;
+            color: #8E8E93;
+        }
+
+        .spin-button {
+            background: #007AFF;
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        /* Mines Page */
+        .mines-section {
+            padding: 20px 0;
+        }
+
+        .multiplier-steps {
+            background: #1C1C1E;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 0.5px solid #2C2C2C;
+        }
+
+        .multiplier-step {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #2C2C2E;
+        }
+
+        .multiplier-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-value {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .step-label {
+            font-size: 15px;
+            color: #8E8E93;
+        }
+
+        .mines-controls {
+            background: #1C1C1E;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 0.5px solid #2C2C2C;
+        }
+
+        .mines-title {
+            font-size: 15px;
+            color: #8E8E93;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .mines-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .mine-btn {
+            background: rgba(120, 120, 128, 0.2);
+            border: 0.5px solid rgba(120, 120, 128, 0.2);
+            color: white;
+            padding: 12px 8px;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .nav-btn {
+            background: rgba(120, 120, 128, 0.2);
+            border: 0.5px solid rgba(120, 120, 128, 0.2);
+            color: white;
+            padding: 12px 8px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .nav-btn.active {
+            background: #007AFF;
+            border-color: #007AFF;
+        }
+    </style>
+</head>
+<body>
+    <!-- Главная страница -->
+    <div class="page active" id="mainPage">
+        <div class="header">
+            <button class="close-btn">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div class="balance-section">
+            <div class="balance-label">Баланс</div>
+            <div class="balance-amount">P22.78</div>
+        </div>
+
+        <div class="partnership">
+            <div class="partnership-title">ПАРТНЕРСТВО</div>
+            <div class="partnership-desc">10% с каждого депозита!</div>
+            <button class="go-btn">Перейти</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="showPage('wheelPage')">Wheel</button>
+            <button class="nav-btn" onclick="showPage('crashPage')">Crash</button>
+            <button class="nav-btn" onclick="showPage('minesPage')">Mines</button>
+            <button class="nav-btn" onclick="showPage('dicePage')">Dice</button>
+        </div>
+
+        <div class="section-title">FOLDER Originals</div>
+        
+        <div class="games-grid">
+            <div class="game-card" onclick="showPage('wheelPage')">
+                <div class="game-header">
+                    <div class="game-name">Wheel</div>
+                    <div class="game-multiplier">X50</div>
+                </div>
+                <div class="game-desc">Крути барабан и выигрывай</div>
+                <div class="game-tags">
+                    <span class="game-tag">Live</span>
+                    <span class="game-tag">Mines</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="showPage('crashPage')">
+                <div class="game-header">
+                    <div class="game-name">Crash</div>
+                    <div class="game-multiplier">X5K</div>
+                </div>
+                <div class="game-desc">Чем выше ракета, тем больше выигрыш</div>
+                <div class="game-tags">
+                    <span class="game-tag">Live</span>
+                    <span class="game-tag">Crash</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="showPage('towerPage')">
+                <div class="game-header">
+                    <div class="game-name">Tower</div>
+                    <div class="game-multiplier">X1K</div>
+                </div>
+                <div class="game-desc">Спускайся ниже, забирай больше!</div>
+                <div class="game-tags">
+                    <span class="game-tag">Live</span>
+                    <span class="game-tag">Dice</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="showPage('dicePage')">
+                <div class="game-header">
+                    <div class="game-name">Dice</div>
+                    <div class="game-multiplier">X6</div>
+                </div>
+                <div class="game-desc">Бросай кости и выигрывай</div>
+                <div class="game-tags">
+                    <span class="game-tag">Live</span>
+                    <span class="game-tag">Dice</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Страница Wheel -->
+    <div class="page" id="wheelPage">
+        <div class="header">
+            <button class="close-btn" onclick="showPage('mainPage')">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-sections">
+                        <div class="wheel-item"><div class="multiplier">x2</div></div>
+                        <div class="wheel-item"><div class="multiplier">x3</div></div>
+                        <div class="wheel-item"><div class="multiplier">x5</div></div>
+                        <div class="wheel-item"><div class="multiplier">x50</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bet-controls">
+            <div class="bet-title">Ваша ставка</div>
+            <div class="current-bet">
+                <div class="bet-amount">P 22.78</div>
+                <div class="bet-info">
+                    <div class="bet-multiplier">1/2 x2</div>
+                </div>
+            </div>
+
+            <div class="quick-bets">
+                <button class="quick-bet">Clear</button>
+                <button class="quick-bet">+100</button>
+                <button class="quick-bet">+1K</button>
+                <button class="quick-bet">All</button>
+            </div>
+
+            <div class="multiplier-grid">
+                <div class="multiplier-item">
+                    <div class="multiplier-value">x2</div>
+                    <div class="multiplier-bet">0 ₽</div>
+                    <div class="multiplier-count">0 ставок</div>
+                </div>
+                <div class="multiplier-item">
+                    <div class="multiplier-value">x3</div>
+                    <div class="multiplier-bet">0 ₽</div>
+                    <div class="multiplier-count">0 ставок</div>
+                </div>
+                <div class="multiplier-item">
+                    <div class="multiplier-value">x5</div>
+                    <div class="multiplier-bet">0 ₽</div>
+                    <div class="multiplier-count">0 ставок</div>
+                </div>
+                <div class="multiplier-item">
+                    <div class="multiplier-value">x50</div>
+                    <div class="multiplier-bet">0 ₽</div>
+                    <div class="multiplier-count">0 ставок</div>
+                </div>
+            </div>
+
+            <button class="spin-button" onclick="spinWheel()">Вращение...</button>
+        </div>
+    </div>
+
+    <!-- Страница Mines -->
+    <div class="page" id="minesPage">
+        <div class="header">
+            <button class="close-btn" onclick="showPage('mainPage')">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div class="balance-section">
+            <div class="balance-label">Баланс</div>
+            <div class="balance-amount">P22.78</div>
+        </div>
+
+        <div class="mines-section">
+            <div class="multiplier-steps">
+                <div class="multiplier-step">
+                    <div class="step-value">X1.04</div>
+                    <div class="step-label">шаг 1</div>
+                </div>
+                <div class="multiplier-step">
+                    <div class="step-value">X1.13</div>
+                    <div class="step-label">шаг 2</div>
+                </div>
+                <div class="multiplier-step">
+                    <div class="step-value">X1.23</div>
+                    <div class="step-label">шаг 3</div>
+                </div>
+                <div class="multiplier-step">
+                    <div class="step-value">X1.35</div>
+                    <div class="step-label">шаг 4</div>
+                </div>
+            </div>
+
+            <div class="bet-controls">
+                <div class="current-bet">
+                    <div class="bet-amount">P 10</div>
+                    <div class="bet-info">
+                        <div class="bet-multiplier">1/2 x2</div>
+                    </div>
+                </div>
+
+                <div class="mines-controls">
+                    <div class="mines-title">Количество мин</div>
+                    <div class="mines-buttons">
+                        <button class="mine-btn">1</button>
+                        <button class="mine-btn">2</button>
+                        <button class="mine-btn">3</button>
+                        <button class="mine-btn">4</button>
+                    </div>
+                </div>
+
+                <button class="spin-button">Сделать ставку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Заглушки для других страниц -->
+    <div class="page" id="crashPage">
+        <div class="header">
+            <button class="close-btn" onclick="showPage('mainPage')">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="balance-section">
+            <div style="text-align: center; padding: 40px; color: #8E8E93;">
+                Crash Game - В разработке
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="dicePage">
+        <div class="header">
+            <button class="close-btn" onclick="showPage('mainPage')">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="balance-section">
+            <div style="text-align: center; padding: 40px; color: #8E8E93;">
+                Dice Game - В разработке
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="towerPage">
+        <div class="header">
+            <button class="close-btn" onclick="showPage('mainPage')">×</button>
+            <div class="app-title">
+                <div class="app-name">FOLDER</div>
+                <div class="app-subtitle">МИНИ-ПРИЛОЖЕНИЕ</div>
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="balance-section">
+            <div style="text-align: center; padding: 40px; color: #8E8E93;">
+                Tower Game - В разработке
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Навигация между страницами
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            // Обновляем навигационные кнопки
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Активируем соответствующую кнопку
+            if (pageId === 'wheelPage') {
+                document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
+            } else if (pageId === 'minesPage') {
+                document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
+            } else if (pageId === 'mainPage') {
+                // На главной странице все кнопки неактивны
+            }
+        }
+
+        // Wheel functionality
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.querySelector('.spin-button');
+            
+            if (wheel.classList.contains('spinning')) return;
+            
+            wheel.classList.add('spinning');
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'Вращение...';
+            
+            // Случайный результат
+            const results = [0, 90, 180, 270]; // углы для x2, x3, x5, x50
+            const randomResult = results[Math.floor(Math.random() * results.length)];
+            const targetAngle = 1080 + randomResult;
+            
+            wheel.style.transform = `rotate(${targetAngle}deg)`;
+            
+            setTimeout(() => {
+                wheel.classList.remove('spinning');
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'Крутить снова';
+                
+                // Определяем выигрышный множитель
+                let multiplier;
+                switch (randomResult) {
+                    case 0: multiplier = 'x2'; break;
+                    case 90: multiplier = 'x3'; break;
+                    case 180: multiplier = 'x5'; break;
+                    case 270: multiplier = 'x50'; break;
+                }
+                
+                // Показываем результат (можно заменить на красивый popup)
+                setTimeout(() => {
+                    alert(`Вы выиграли: ${multiplier}`);
+                }, 500);
+                
+            }, 3000);
+        }
+
+        // Mines functionality
+        document.querySelectorAll('.mine-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mine-btn').forEach(b => {
+                    b.style.background = 'rgba(120, 120, 128, 0.2)';
+                    b.style.borderColor = 'rgba(120, 120, 128, 0.2)';
+                });
+                this.style.background = '#007AFF';
+                this.style.borderColor = '#007AFF';
+            });
+        });
+
+        // Quick bets functionality
+        document.querySelectorAll('.quick-bet').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const betAmount = document.querySelector('.bet-amount');
+                let currentBet = parseFloat(betAmount.textContent.replace('P ', ''));
+                
+                switch(this.textContent) {
+                    case 'Clear':
+                        currentBet = 0;
+                        break;
+                    case '+100':
+                        currentBet += 100;
+                        break;
+                    case '+1K':
+                        currentBet += 1000;
+                        break;
+                    case 'All':
+                        currentBet = 22.78; // текущий баланс
+                        break;
+                }
+                
+                betAmount.textContent = `P ${currentBet.toFixed(2)}`;
+            });
+        });
+
+        // Инициализация Telegram Web App
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            
+            // Настройка цвета фона под тему Telegram
+            Telegram.WebApp.setBackgroundColor('#0F0F0F');
+        }
+
+        // Закрытие приложения
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
